@@ -320,7 +320,7 @@ function attemptsHtml() {
   const pips = Array.from({ length: 3 }, (_, i) =>
     `<div class="attempt-pip${i >= (3 - gs.attempts) ? ' used' : ''}"></div>`
   ).join('');
-  return `<div class="attempts-wrap">${pips}</div>`;
+  return `<div class="attempts-wrap"><span class="attempts-label">Guesses:</span>${pips}</div>`;
 }
 
 function misspellingHistoryHtml() {

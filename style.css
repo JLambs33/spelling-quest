@@ -660,6 +660,15 @@ html, body {
   align-items: center;
 }
 
+.attempts-label {
+  font-family: var(--font-main);
+  font-size: 8px;
+  color: #ccc;
+  text-shadow: var(--shadow-text);
+  margin-right: 4px;
+  letter-spacing: 1px;
+}
+
 .attempt-pip {
   width: 14px;
   height: 14px;
