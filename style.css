@@ -318,6 +318,48 @@ html, body {
 }
 
 /* ============================================================
+   Difficulty dropdown
+   ============================================================ */
+.mc-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.mc-select {
+  font-family: var(--font-main);
+  font-size: 11px;
+  color: var(--mc-text);
+  background: var(--mc-stone-dark);
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  letter-spacing: 1px;
+  text-shadow: var(--shadow-text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+
+  border-top:    3px solid var(--mc-stone);
+  border-left:   3px solid var(--mc-stone);
+  border-right:  3px solid #1a1a1a;
+  border-bottom: 3px solid #1a1a1a;
+}
+
+.mc-select:focus {
+  border-color: var(--mc-gold);
+}
+
+.mc-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--mc-text-dim);
+  pointer-events: none;
+}
+
+/* ============================================================
    History list
    ============================================================ */
 .empty-state {
@@ -553,10 +595,37 @@ html, body {
   border-radius: 0;
 }
 
-.difficulty-easy    { color: #1A5C00; }
-.difficulty-medium  { color: #7A4800; }
-.difficulty-hard    { color: #8B1A00; }
-.difficulty-extreme { color: #3A006B; }
+.difficulty-easy       { color: #1A5C00; }
+.difficulty-medium     { color: #7A4800; }
+.difficulty-hard       { color: #8B1A00; }
+.difficulty-extreme    { color: #3A006B; }
+.difficulty-impossible { color: #1A1A1A; }
+
+/* Impossible mode single text display */
+.impossible-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  min-height: 60px;
+  padding: 12px 20px;
+  background: #000;
+  border-top:    3px solid var(--mc-stone-dark);
+  border-left:   3px solid var(--mc-stone-dark);
+  border-right:  3px solid var(--mc-stone-light);
+  border-bottom: 3px solid var(--mc-stone-light);
+  font-family: var(--font-main);
+  font-size: 22px;
+  color: var(--mc-xp);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 4px;
+}
+
+.impossible-cursor {
+  animation: cursor-blink 900ms step-end infinite;
+  color: var(--mc-gold);
+  margin-left: 2px;
+}
 
 /* Speak-again button — big and easy to tap */
 .speak-btn {
