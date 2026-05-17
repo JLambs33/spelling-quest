@@ -667,6 +667,9 @@ html, body {
 }
 
 .misspell-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-main);
   font-size: 14px;
   color: var(--mc-wrong);
@@ -675,8 +678,13 @@ html, body {
   padding: 4px 12px;
   background: rgba(0, 0, 0, 0.55);
   border: 2px solid var(--mc-wrong);
-  text-decoration: line-through;
-  text-decoration-color: var(--mc-wrong);
+}
+
+.misspell-x {
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0;
+  flex-shrink: 0;
 }
 
 /* ============================================================

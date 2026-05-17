@@ -326,7 +326,7 @@ function attemptsHtml() {
 function misspellingHistoryHtml() {
   if (!gs.currentWrongAttempts.length) return '';
   const items = gs.currentWrongAttempts.map(a =>
-    `<span class="misspell-item">${escHtml(a)}</span>`
+    `<span class="misspell-item"><span class="misspell-x">&#10007;</span>${escHtml(a)}</span>`
   ).join('');
   return `<div class="misspell-history">${items}</div>`;
 }
