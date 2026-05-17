@@ -215,8 +215,6 @@ const sceneBg = (() => {
       ctx.fillRect(bx, by, BS, 1);
     }
 
-    ctx.fillStyle = dim ? '#3A3A3A' : '#5A5A5A';
-    ctx.fillRect(0, gy + BS * 3, W, H);
   }
 
   // ── Trees ────────────────────────────────────────────────────
@@ -353,6 +351,98 @@ const sceneBg = (() => {
     ctx.globalAlpha = 1;
   }
 
+  // ── Bottom ground (grass earth + wildflowers) ────────────────
+  const FLOWER_COLORS = ['#FF4455','#FFCC00','#FFFFFF','#44AAFF','#FF88CC','#FF8800','#FF66AA'];
+  let groundPatches = [];
+  let grassTufts    = [];
+  let wildFlowers   = [];
+
+  function initBottomGround() {
+    const startY = Math.floor(H * 0.45) + BS * 3 + 1;
+    const zoneH  = Math.max(0, H - startY);
+
+    // Subtle colour-variation patches
+    groundPatches = Array.from({ length: Math.floor(W / 35) + 6 }, () => ({
+      x: Math.random() * W,
+      y: startY + Math.random() * zoneH,
+      w: 10 + Math.random() * 28,
+      h:  6 + Math.random() * 16,
+      light: Math.random() > 0.5,
+    }));
+
+    // Grass tufts — dense row at the top edge, sparse scatter below
+    grassTufts = [];
+    for (let x = 0; x < W; x += 2 + Math.floor(Math.random() * 5)) {
+      grassTufts.push({ x, y: startY, h: 2 + Math.floor(Math.random() * 5), wide: Math.random() > 0.4 });
+    }
+    const scattered = Math.floor(W / 22);
+    for (let i = 0; i < scattered; i++) {
+      grassTufts.push({
+        x: Math.random() * W,
+        y: startY + 4 + Math.random() * Math.min(50, zoneH * 0.35),
+        h: 5 + Math.floor(Math.random() * 7),
+        wide: Math.random() > 0.3,
+      });
+    }
+
+    // Wildflowers
+    const count = Math.max(7, Math.floor(W / 65));
+    wildFlowers = Array.from({ length: count }, () => ({
+      x:      8 + Math.random() * (W - 16),
+      y:      startY + 14 + Math.random() * Math.max(0, zoneH - 22),
+      color:  FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)],
+      stemH:  9 + Math.floor(Math.random() * 10),
+      cross:  Math.random() > 0.45,   // cross-petal vs dot style
+    }));
+  }
+
+  function drawBottomGround(cy) {
+    const startY = Math.floor(H * 0.45) + BS * 3 + 1;
+    const dim    = nightAlpha(cy) > 0.5;
+
+    // Base earth fill
+    ctx.fillStyle = dim ? '#1A3A08' : '#2E5C10';
+    ctx.fillRect(0, startY, W, H - startY);
+
+    // Colour patches for texture
+    groundPatches.forEach(p => {
+      ctx.fillStyle = dim
+        ? (p.light ? '#22480E' : '#142A06')
+        : (p.light ? '#3A7A1E' : '#1E440A');
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+    });
+
+    // Grass tufts
+    const tuftColor = dim ? '#2A5014' : '#4A8A22';
+    grassTufts.forEach(g => {
+      ctx.fillStyle = tuftColor;
+      ctx.fillRect(g.x, g.y - g.h, 1, g.h);
+      if (g.wide) ctx.fillRect(g.x + 1, g.y - g.h + 1, 1, g.h - 1);
+    });
+
+    // Wildflowers
+    wildFlowers.forEach(f => {
+      ctx.globalAlpha = dim ? 0.50 : 1;
+      // Stem
+      ctx.fillStyle = '#3A7A1E';
+      ctx.fillRect(f.x, f.y - f.stemH, 1, f.stemH);
+      // Leaf nub
+      ctx.fillRect(f.x + 1, f.y - Math.round(f.stemH * 0.55), 2, 1);
+      // Petals
+      ctx.fillStyle = f.color;
+      if (f.cross) {
+        ctx.fillRect(f.x - 1, f.y - f.stemH - 2, 3, 1); // horizontal
+        ctx.fillRect(f.x,     f.y - f.stemH - 3, 1, 3); // vertical
+      } else {
+        ctx.fillRect(f.x - 1, f.y - f.stemH - 2, 3, 3); // blob
+      }
+      // Yellow centre
+      ctx.fillStyle = '#FFEE00';
+      ctx.fillRect(f.x, f.y - f.stemH - 1, 1, 1);
+    });
+    ctx.globalAlpha = 1;
+  }
+
   // ── Fireflies ─────────────────────────────────────────────────
   const FIREFLIES = Array.from({ length: 14 }, () => ({
     xf:    Math.random(),
@@ -413,6 +503,7 @@ const sceneBg = (() => {
     CLOUDS.forEach(c => drawCloud(c.xf * W, c.yf, c.w, t));
     updateBirds(dt, t);
     drawGround(t);
+    drawBottomGround(t);
     TREE_XF.forEach(f => drawTree(Math.round(f * W), t));
     updateLeaves(dt, t);
     drawFireflies(t, ts);
@@ -423,7 +514,8 @@ const sceneBg = (() => {
   document.addEventListener('DOMContentLoaded', () => {
     resize();
     initLeaves();
-    window.addEventListener('resize', () => { resize(); initLeaves(); });
+    initBottomGround();
+    window.addEventListener('resize', () => { resize(); initLeaves(); initBottomGround(); });
     lastTs = performance.now();
     rafId  = requestAnimationFrame(frame);
     document.addEventListener('visibilitychange', () => {
