@@ -40,13 +40,16 @@
         <button class="mc-toggle" data-voice="uk-female">&#127468;&#127463; UK Female</button>
       </div>
 
-      <label class="mc-label">Difficulty</label>
-      <div class="mc-toggle-group">
-        <button class="mc-toggle mc-toggle--active" data-difficulty="easy">&#127823; Easy</button>
-        <button class="mc-toggle" data-difficulty="medium">&#128337; Medium</button>
-        <button class="mc-toggle" data-difficulty="hard">&#128293; Hard</button>
-        <button class="mc-toggle" data-difficulty="extreme">&#9889; Extreme</button>
-        <button class="mc-toggle" data-difficulty="impossible">&#128128; Impossible</button>
+      <label class="mc-label" for="difficulty-select">Difficulty</label>
+      <div class="mc-select-wrap">
+        <select id="difficulty-select" class="mc-select">
+          <option value="easy">🍊 Easy</option>
+          <option value="medium">⏱ Medium</option>
+          <option value="hard">🔥 Hard</option>
+          <option value="extreme">⚡ Extreme</option>
+          <option value="impossible">💀 Impossible</option>
+        </select>
+        <span class="mc-select-arrow">&#9660;</span>
       </div>
 
       <button id="start-btn" class="mc-button mc-button--green" disabled>

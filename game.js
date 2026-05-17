@@ -496,13 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('parent-screen');
   });
 
-  // Difficulty toggle buttons
-  document.querySelectorAll('[data-difficulty]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-difficulty]').forEach(b => b.classList.remove('mc-toggle--active'));
-      btn.classList.add('mc-toggle--active');
-      selectedDifficulty = btn.dataset.difficulty;
-    });
+  // Difficulty dropdown
+  document.getElementById('difficulty-select').addEventListener('change', e => {
+    selectedDifficulty = e.target.value;
   });
 
   // Voice toggle buttons
