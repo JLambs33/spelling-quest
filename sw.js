@@ -1,4 +1,4 @@
-const CACHE = 'spelling-quest-v0.1.17';
+const CACHE = 'spelling-quest-v0.1.18';
 
 const ASSETS = [
   './',
