@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="version-badge">v0.1.20</div>
+  <div id="version-badge">v0.1.21</div>
 
   <!-- ===================== PARENT SCREEN ===================== -->
   <div id="parent-screen" class="screen">
@@ -74,7 +74,10 @@
     <canvas id="mob-canvas"></canvas>
 
     <div class="game-header">
-      <div id="progress-row" class="progress-row"></div>
+      <div class="progress-wrap">
+        <span class="progress-label">Word Progress:</span>
+        <div id="progress-row" class="progress-row"></div>
+      </div>
       <button id="quit-btn" class="mc-button mc-button--small">&#10005; Quit</button>
     </div>
 
