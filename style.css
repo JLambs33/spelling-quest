@@ -656,13 +656,29 @@ html, body {
 /* Attempts remaining pips */
 .attempts-wrap {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.attempts-pips {
+  display: flex;
   gap: 6px;
   align-items: center;
 }
 
+.attempts-label {
+  font-family: var(--font-main);
+  font-size: 10px;
+  color: #ccc;
+  text-shadow: var(--shadow-text);
+  margin-right: 4px;
+  letter-spacing: 1px;
+}
+
 .attempt-pip {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   background: var(--mc-wrong);
   border: 2px solid #000;
 }
