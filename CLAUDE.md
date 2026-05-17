@@ -178,6 +178,69 @@ Triggered from champion screen BONUS ROUND! button (perfect scores only).
 - **Durable**: Parent clicks "Save to File" → downloads `spelling-quest-wordlists.json`; "Load from File" merges by id. Intended long-term backup.
 - **Delete**: Each history item has a red ✕ button that calls `deleteWordList(id)` and re-renders.
 
+## Development Workflow
+
+### Branch strategy
+
+```
+main        ← production (GitHub Pages live site)
+staging     ← integration branch; all PRs target here first
+feature/*   ← new features, cut from staging
+bugfix/*    ← bug fixes, cut from staging
+chore/*     ← staging → main promotions and housekeeping
+```
+
+**Never push directly to `main` or `staging`.** All work goes through a PR.
+
+### Starting a task
+
+1. Check out `staging` and pull latest: `git checkout staging && git pull`
+2. Cut a new branch from `staging`:
+   - Feature: `git checkout -b feature/sq-N-short-description`
+   - Bug fix: `git checkout -b bugfix/sq-N-short-description`
+3. Do the work, commit with the story number in the message (see below)
+4. Notify the user to test locally via `python serve.py`
+5. On approval, open a PR from the feature/bugfix branch into `staging`
+
+### Promoting staging → main
+
+1. Use branch name `chore/staging-to-main` (or `chore/sq-N-release` if tied to a story)
+2. PR description must list every story/change being promoted (not just "merge staging")
+3. After merge, GitHub Pages auto-deploys from `main`
+
+### Commit message format
+
+```
+sq-N: short imperative description
+
+- bullet detail if needed
+```
+
+Example: `sq-4: add difficulty toggle persistence`
+
+### PR format
+
+- Title: `sq-N: short description` (feature/bugfix) or `chore: promote staging → main [sq-N, sq-M]`
+- Body: what changed, how to test, story reference
+
+### Work tracking (Beads)
+
+- All stories live in Beads
+- Story IDs are sequential and take the form `sq-1`, `sq-2`, `sq-3`, …
+- Open a story before starting work; close it when the PR merges to `staging`
+
+### Versioning
+
+- SemVer: `MAJOR.MINOR.PATCH` (currently in `0.x` pre-release)
+- Bump the patch on every change; update `#version-badge` in `index.html`
+- Update `CACHE` constant in `sw.js` to match (triggers service worker refresh)
+
+### Staging preview URL
+
+GitHub Pages free tier only publishes one branch (currently `main`). For staging:
+- Test locally with `python serve.py` before opening the staging PR
+- If a hosted staging URL becomes useful later, Netlify or Cloudflare Pages support free branch-preview deployments
+
 ## Planned future work
 
 - Math phase: addition, subtraction, number recognition (not yet started; keep game.js difficulty logic cleanly separable)
