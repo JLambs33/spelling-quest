@@ -662,7 +662,7 @@ html, body {
 
 .attempts-label {
   font-family: var(--font-main);
-  font-size: 8px;
+  font-size: 10px;
   color: #ccc;
   text-shadow: var(--shadow-text);
   margin-right: 4px;
