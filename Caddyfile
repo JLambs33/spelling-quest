@@ -1,8 +1,0 @@
-{
-  auto_https off
-}
-
-https://:8443 {
-  tls cert.pem key.pem
-  file_server
-}
