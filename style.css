@@ -553,10 +553,37 @@ html, body {
   border-radius: 0;
 }
 
-.difficulty-easy    { color: #1A5C00; }
-.difficulty-medium  { color: #7A4800; }
-.difficulty-hard    { color: #8B1A00; }
-.difficulty-extreme { color: #3A006B; }
+.difficulty-easy       { color: #1A5C00; }
+.difficulty-medium     { color: #7A4800; }
+.difficulty-hard       { color: #8B1A00; }
+.difficulty-extreme    { color: #3A006B; }
+.difficulty-impossible { color: #1A1A1A; }
+
+/* Impossible mode single text display */
+.impossible-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  min-height: 60px;
+  padding: 12px 20px;
+  background: #000;
+  border-top:    3px solid var(--mc-stone-dark);
+  border-left:   3px solid var(--mc-stone-dark);
+  border-right:  3px solid var(--mc-stone-light);
+  border-bottom: 3px solid var(--mc-stone-light);
+  font-family: var(--font-main);
+  font-size: 22px;
+  color: var(--mc-xp);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 4px;
+}
+
+.impossible-cursor {
+  animation: cursor-blink 900ms step-end infinite;
+  color: var(--mc-gold);
+  margin-left: 2px;
+}
 
 /* Speak-again button — big and easy to tap */
 .speak-btn {

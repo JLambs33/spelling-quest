@@ -200,20 +200,38 @@ function renderWord() {
   typedLetters  = [];
   awaitingInput = true;
 
-  const { displayRow } = blankWord(word, selectedDifficulty);
-  const isExtreme      = selectedDifficulty === 'extreme';
+  const isImpossible = selectedDifficulty === 'impossible';
+  const isExtreme    = selectedDifficulty === 'extreme';
 
-  // Extreme has no visual hint — always speak the word
-  if (isExtreme) speech.speakWord(word);
-  else           speech.speak(word);
+  if (isImpossible || isExtreme) speech.speakWord(word);
+  else                           speech.speak(word);
 
-  const badge  = {
-    easy:    '&#127823; Easy',
-    medium:  '&#128337; Medium',
-    hard:    '&#128293; Hard',
-    extreme: '&#9889; Extreme',
+  const badge = {
+    easy:       '&#127823; Easy',
+    medium:     '&#128337; Medium',
+    hard:       '&#128293; Hard',
+    extreme:    '&#9889; Extreme',
+    impossible: '&#128128; Impossible',
   }[selectedDifficulty];
 
+  if (isImpossible) {
+    area.innerHTML = `
+      <p class="mechanic-badge difficulty-impossible">${badge}</p>
+      <p class="word-prompt">Listen and spell — no hints!</p>
+      <div class="impossible-display" id="impossible-display">
+        <span id="impossible-text"></span><span class="impossible-cursor">|</span>
+      </div>
+      ${attemptsHtml()}
+      ${misspellingHistoryHtml()}
+      <button class="mc-button speak-btn" onclick="speech.speakWord('${word}')">
+        &#128266; Hear the Word Again
+      </button>
+    `;
+    focusKbInput();
+    return;
+  }
+
+  const { displayRow } = blankWord(word, selectedDifficulty);
   const prompt = isExtreme
     ? 'Listen carefully and spell the word!'
     : 'Fill in the missing letters!';
@@ -292,17 +310,23 @@ function letterSlotsHtml(length) {
 
 function updateLetterSlots() {
   const container = document.getElementById('letter-slots');
-  if (!container) return;
-  container.querySelectorAll('.letter-slot').forEach((slot, i) => {
-    slot.textContent = typedLetters[i] ? typedLetters[i].toUpperCase() : '';
-    slot.classList.toggle('slot-filled', i < typedLetters.length);
-    slot.classList.toggle('slot-active', i === typedLetters.length);
-  });
+  if (container) {
+    container.querySelectorAll('.letter-slot').forEach((slot, i) => {
+      slot.textContent = typedLetters[i] ? typedLetters[i].toUpperCase() : '';
+      slot.classList.toggle('slot-filled', i < typedLetters.length);
+      slot.classList.toggle('slot-active', i === typedLetters.length);
+    });
+  }
+  const impossibleText = document.getElementById('impossible-text');
+  if (impossibleText) {
+    impossibleText.textContent = typedLetters.join('').toUpperCase();
+  }
 }
 
 function addLetter(ch) {
   if (!awaitingInput) return;
-  if (typedLetters.length >= gs.words[gs.wordIndex].length) return;
+  const maxLen = selectedDifficulty === 'impossible' ? 30 : gs.words[gs.wordIndex].length;
+  if (typedLetters.length >= maxLen) return;
   typedLetters.push(ch);
   updateLetterSlots();
 }
