@@ -658,6 +658,27 @@ html, body {
   background: var(--mc-stone-dark);
 }
 
+/* Misspelling history */
+.misspell-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.misspell-item {
+  font-family: var(--font-main);
+  font-size: 14px;
+  color: var(--mc-wrong);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 4px;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid var(--mc-wrong);
+  text-decoration: line-through;
+  text-decoration-color: var(--mc-wrong);
+}
+
 /* ============================================================
    Word feedback overlay
    ============================================================ */
