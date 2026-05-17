@@ -45,7 +45,7 @@ const ambientMobs = (() => {
     const t = pickType();
     const fromLeft = Math.random() < 0.5;
     const x = fromLeft ? -t.w - 10 : canvas.width + 10;
-    const y = canvas.height * 0.40 + Math.random() * (canvas.height * 0.38);
+    const y = canvas.height * 0.45 + Math.random() * (canvas.height * 0.40);
     const spd = pickSpd();
     return {
       kind: t.kind, w: t.w, h: t.h,
@@ -70,7 +70,8 @@ const ambientMobs = (() => {
       nextSpawn = elapsed + rand(SPAWN_MIN, SPAWN_MAX);
     }
 
-    const yMin = canvas.height * 0.36;
+    // grass top is at 45% of screen height (matches CSS background gradient)
+    const yMin = canvas.height * 0.45;
     const yMax = canvas.height * 0.90;
 
     for (const m of mobs) {
@@ -90,9 +91,9 @@ const ambientMobs = (() => {
       m.y += m.vy * dt;
       if (m.vx !== 0) m.facing = m.vx > 0 ? 1 : -1;
 
-      // soft y-bounds nudge
-      if (m.y < yMin && m.vy < 0) m.vy = Math.abs(m.vy);
-      if (m.y + m.h > yMax && m.vy > 0) m.vy = -Math.abs(m.vy);
+      // hard y-bounds clamp
+      if (m.y < yMin) { m.y = yMin; m.vy = Math.abs(m.vy); }
+      if (m.y + m.h > yMax) { m.y = yMax - m.h; m.vy = -Math.abs(m.vy); }
 
       if (!m.entered && m.x > 0 && m.x + m.w < canvas.width) {
         m.entered = true;
