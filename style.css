@@ -656,6 +656,13 @@ html, body {
 /* Attempts remaining pips */
 .attempts-wrap {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.attempts-pips {
+  display: flex;
   gap: 6px;
   align-items: center;
 }
