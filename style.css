@@ -393,11 +393,25 @@ html, body {
   max-width: 620px;
 }
 
+.progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.progress-label {
+  font-family: var(--font-main);
+  font-size: 10px;
+  color: #ccc;
+  text-shadow: var(--shadow-text);
+  letter-spacing: 1px;
+}
+
 .progress-row {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  flex: 1;
   align-items: center;
 }
 
