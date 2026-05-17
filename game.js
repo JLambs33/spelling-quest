@@ -158,7 +158,7 @@ function startQuest() {
   saveWordList(label, words);
   renderHistory();
   collapseNewList();
-  gs = { words, wordIndex: 0, attempts: 0, correctCount: 0, wrongWords: [], results: [] };
+  gs = { words, wordIndex: 0, attempts: 0, correctCount: 0, wrongWords: [], results: [], currentWrongAttempts: [] };
   showScreen('game-screen');
   ambientMobs.start();
   updateProgress();
@@ -185,9 +185,10 @@ function updateProgress() {
 // ============================================================
 function nextWord() {
   if (gs.wordIndex >= gs.words.length) { endSession(); return; }
-  gs.attempts   = 0;
-  typedLetters  = [];
-  awaitingInput = true;
+  gs.attempts             = 0;
+  gs.currentWrongAttempts = [];
+  typedLetters            = [];
+  awaitingInput           = true;
   hideFeedback();
   renderWord();
 }
@@ -225,6 +226,7 @@ function renderWord() {
       ${letterSlotsHtml(word.length)}
     </div>
     ${attemptsHtml()}
+    ${misspellingHistoryHtml()}
     <button class="mc-button speak-btn" onclick="speech.speakWord('${word}')">
       &#128266; Hear the Word Again
     </button>
@@ -316,9 +318,17 @@ function removeLetter() {
 // ============================================================
 function attemptsHtml() {
   const pips = Array.from({ length: 3 }, (_, i) =>
-    `<div class="attempt-pip${i < gs.attempts ? ' used' : ''}"></div>`
+    `<div class="attempt-pip${i >= (3 - gs.attempts) ? ' used' : ''}"></div>`
   ).join('');
   return `<div class="attempts-wrap">${pips}</div>`;
+}
+
+function misspellingHistoryHtml() {
+  if (!gs.currentWrongAttempts.length) return '';
+  const items = gs.currentWrongAttempts.map(a =>
+    `<span class="misspell-item"><span class="misspell-x">&#10007;</span>${escHtml(a)}</span>`
+  ).join('');
+  return `<div class="misspell-history">${items}</div>`;
 }
 
 // ============================================================
@@ -343,6 +353,7 @@ function handleCorrect() {
 }
 
 function handleWrong() {
+  gs.currentWrongAttempts.push(typedLetters.join('').toUpperCase());
   gs.attempts++;
   if (gs.attempts >= 3) {
     awaitingInput = false;
