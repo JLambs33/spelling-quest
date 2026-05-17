@@ -1,12 +1,17 @@
 const ambientMobs = (() => {
   // ── constants ────────────────────────────────────────────────
-  const MAX_ON_SCREEN  = 4;
-  const BASE_SPEED     = 38;   // px/s
-  const SPAWN_MIN      = 3.5;  // seconds between spawns
-  const SPAWN_MAX      = 7.0;
-  const TURN_MIN       = 3;    // seconds between direction changes
+  const MAX_ON_SCREEN  = 10;
+  const SPAWN_MIN      = 1.8;  // seconds between spawns
+  const SPAWN_MAX      = 4.5;
+  const TURN_MIN       = 2.5;  // seconds between direction changes
   const TURN_MAX       = 6;
-  const LEAVE_CHANCE   = 0.22; // probability a turn becomes a "leave"
+  const LEAVE_CHANCE   = 0.18; // probability a turn becomes a "leave"
+  const PAUSE_CHANCE   = 0.20; // probability a turn becomes a pause
+  const PAUSE_MIN      = 0.6;  // seconds paused
+  const PAUSE_MAX      = 2.2;
+  const SPD_MIN        = 18;   // px/s slowest walk
+  const SPD_MAX        = 72;   // px/s fastest walk
+  const VY_MAX         = 18;   // px/s max vertical drift
 
   const TYPES = [
     { kind: 'zombie',   w: 20, h: 36, weight: 4 },
@@ -34,16 +39,22 @@ const ambientMobs = (() => {
 
   function rand(min, max) { return min + Math.random() * (max - min); }
 
+  function pickSpd() { return rand(SPD_MIN, SPD_MAX); }
+
   function spawnMob() {
     const t = pickType();
     const fromLeft = Math.random() < 0.5;
     const x = fromLeft ? -t.w - 10 : canvas.width + 10;
-    const y = canvas.height * 0.42 + Math.random() * (canvas.height * 0.36);
-    const spd = BASE_SPEED + rand(-10, 10);
+    const y = canvas.height * 0.40 + Math.random() * (canvas.height * 0.38);
+    const spd = pickSpd();
     return {
       kind: t.kind, w: t.w, h: t.h,
       x, y,
       vx: fromLeft ? spd : -spd,
+      vy: rand(-VY_MAX * 0.5, VY_MAX * 0.5),
+      facing: fromLeft ? 1 : -1,
+      paused: false,
+      pauseTimer: 0,
       entered: false,
       leaving: false,
       turnTimer: rand(TURN_MIN, TURN_MAX),
@@ -59,8 +70,29 @@ const ambientMobs = (() => {
       nextSpawn = elapsed + rand(SPAWN_MIN, SPAWN_MAX);
     }
 
+    const yMin = canvas.height * 0.36;
+    const yMax = canvas.height * 0.90;
+
     for (const m of mobs) {
+      // paused — count down then resume
+      if (m.paused) {
+        m.pauseTimer -= dt;
+        if (m.pauseTimer <= 0) {
+          m.paused = false;
+          m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd();
+          m.vy = rand(-VY_MAX, VY_MAX);
+          m.turnTimer = rand(TURN_MIN, TURN_MAX);
+        }
+        continue;
+      }
+
       m.x += m.vx * dt;
+      m.y += m.vy * dt;
+      if (m.vx !== 0) m.facing = m.vx > 0 ? 1 : -1;
+
+      // soft y-bounds nudge
+      if (m.y < yMin && m.vy < 0) m.vy = Math.abs(m.vy);
+      if (m.y + m.h > yMax && m.vy > 0) m.vy = -Math.abs(m.vy);
 
       if (!m.entered && m.x > 0 && m.x + m.w < canvas.width) {
         m.entered = true;
@@ -69,14 +101,21 @@ const ambientMobs = (() => {
       if (m.entered && !m.leaving) {
         m.turnTimer -= dt;
         if (m.turnTimer <= 0) {
-          if (Math.random() < LEAVE_CHANCE) {
+          const roll = Math.random();
+          if (roll < LEAVE_CHANCE) {
             m.leaving = true;
+          } else if (roll < LEAVE_CHANCE + PAUSE_CHANCE) {
+            m.paused     = true;
+            m.vx         = 0;
+            m.vy         = 0;
+            m.pauseTimer = rand(PAUSE_MIN, PAUSE_MAX);
           } else {
-            m.vx = (Math.random() < 0.5 ? 1 : -1) * (BASE_SPEED + rand(-10, 10));
+            m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd();
+            m.vy = rand(-VY_MAX, VY_MAX);
           }
           m.turnTimer = rand(TURN_MIN, TURN_MAX);
         }
-        // soft edge nudge
+        // soft x-edge nudge
         if (m.x < 30 && m.vx < 0) m.vx = Math.abs(m.vx);
         if (m.x + m.w > canvas.width - 30 && m.vx > 0) m.vx = -Math.abs(m.vx);
       }
@@ -88,7 +127,7 @@ const ambientMobs = (() => {
   // ── drawing ───────────────────────────────────────────────────
   function drawMob(m) {
     ctx.save();
-    if (m.vx < 0) {
+    if (m.facing < 0) {
       ctx.translate(m.x + m.w, m.y);
       ctx.scale(-1, 1);
       drawShape(m, 0, 0);
