@@ -1,4 +1,4 @@
-const CACHE = 'spelling-quest-v0.1.18';
+const CACHE = 'spelling-quest-v0.1.19';
 
 const ASSETS = [
   './',
@@ -11,6 +11,7 @@ const ASSETS = [
   './game.js',
   './manifest.json',
   './mobs.js',
+  './bg.js',
   './fonts/PressStart2P-Regular.ttf',
   './icons/icon-192.png',
   './icons/icon-512.png',
