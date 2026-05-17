@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="version-badge">v0.1.14</div>
+  <div id="version-badge">v0.1.15</div>
 
   <!-- ===================== PARENT SCREEN ===================== -->
   <div id="parent-screen" class="screen">
@@ -71,6 +71,7 @@
 
   <!-- ===================== GAME SCREEN ===================== -->
   <div id="game-screen" class="screen hidden">
+    <canvas id="mob-canvas"></canvas>
 
     <div class="game-header">
       <div id="progress-row" class="progress-row"></div>
@@ -129,6 +130,7 @@
   <script src="speech.js"></script>
   <script src="rewards.js"></script>
   <script src="bonus.js"></script>
+  <script src="mobs.js"></script>
   <script src="game.js"></script>
   <script>
     // Set today's date as the default label
