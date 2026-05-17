@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Spelling Quest">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Spelling Quest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="version-badge">v0.1.14</div>
+
+  <!-- ===================== PARENT SCREEN ===================== -->
+  <div id="parent-screen" class="screen">
+    <div class="title-block">
+      <h1 class="game-title">Spelling<br>Quest</h1>
+      <p class="game-subtitle">Minecraft Edition</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header" id="new-list-toggle" onclick="toggleNewList()">
+        <h2 class="panel-title">New Word List</h2>
+        <span id="new-list-arrow" class="panel-arrow">&#9660;</span>
+      </div>
+      <div id="new-list-body">
+        <label class="mc-label" for="list-label">Week Label</label>
+        <input id="list-label" class="mc-input" type="text" maxlength="40" placeholder="Week of May 13">
+
+        <label class="mc-label" for="word-input">Spelling Words <span class="label-hint">(one per line)</span></label>
+        <textarea id="word-input" class="mc-textarea" rows="8" placeholder="cat&#10;dog&#10;run&#10;hat&#10;big"></textarea>
+      </div>
+
+      <label class="mc-label">Voice</label>
+      <div class="mc-toggle-group">
+        <button class="mc-toggle mc-toggle--active" data-voice="us">&#127482;&#127480; US English</button>
+        <button class="mc-toggle" data-voice="uk-female">&#127468;&#127463; UK Female</button>
+      </div>
+
+      <label class="mc-label">Difficulty</label>
+      <div class="mc-toggle-group">
+        <button class="mc-toggle mc-toggle--active" data-difficulty="easy">&#127823; Easy</button>
+        <button class="mc-toggle" data-difficulty="medium">&#128337; Medium</button>
+        <button class="mc-toggle" data-difficulty="hard">&#128293; Hard</button>
+        <button class="mc-toggle" data-difficulty="extreme">&#9889; Extreme</button>
+      </div>
+
+      <button id="start-btn" class="mc-button mc-button--green" disabled>
+        &#9658; Start Game!
+      </button>
+    </div>
+
+    <div class="panel" id="history-panel">
+      <h2 class="panel-title">Past Word Lists</h2>
+      <div class="history-file-actions">
+        <button id="export-btn" class="mc-button mc-button--small">&#128190; Save to File</button>
+        <label class="mc-button mc-button--small history-import-label">
+          &#128194; Load from File
+          <input type="file" id="import-file" accept=".json" style="display:none">
+        </label>
+      </div>
+      <p id="import-status" class="import-status hidden"></p>
+      <div id="history-list">
+        <p class="empty-state">No saved lists yet. Enter your first word list above!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== GAME SCREEN ===================== -->
+  <div id="game-screen" class="screen hidden">
+
+    <div class="game-header">
+      <div id="progress-row" class="progress-row"></div>
+      <button id="quit-btn" class="mc-button mc-button--small">&#10005; Quit</button>
+    </div>
+
+    <div id="mob-tease" class="mob-tease">
+      <div class="mob-tease-box">?</div>
+      <p class="mob-tease-hint">Spell all the words to reveal the mystery mob!</p>
+    </div>
+
+    <div id="game-area" class="game-area">
+      <!-- Mechanic UI injected here by game.js -->
+    </div>
+
+    <div id="word-feedback" class="word-feedback hidden">
+      <!-- ✓ / ✗ feedback injected here -->
+    </div>
+
+  </div>
+
+  <!-- ===================== CHAMPION SCREEN ===================== -->
+  <div id="champion-screen" class="screen hidden">
+    <div class="champion-title-wrap">
+      <h1 class="champion-title" id="champion-title">YOU DID IT!</h1>
+      <p class="champion-subtitle" id="champion-subtitle">Spelling Champion!</p>
+    </div>
+
+    <div id="champion-mob" class="champion-mob">
+      <!-- CSS pixel-art mob injected by rewards.js -->
+    </div>
+
+    <div class="champion-score-panel panel">
+      <p id="champion-score" class="champion-score-text"></p>
+    </div>
+
+    <div class="champion-buttons">
+      <button id="bonus-btn" class="mc-button mc-button--green hidden">&#127918; BONUS ROUND!</button>
+      <button id="play-again-btn" class="mc-button mc-button--green">&#9658; Play Again</button>
+      <button id="change-words-btn" class="mc-button">&#8592; Change Words</button>
+    </div>
+  </div>
+
+  <!-- ===================== BONUS SCREEN ===================== -->
+  <div id="bonus-screen" class="screen hidden">
+    <p class="bonus-title">&#127918; BONUS ROUND!</p>
+    <canvas id="bonus-canvas" class="bonus-canvas"></canvas>
+    <button id="bonus-home-btn" class="mc-button hidden">&#8592; Back to Home</button>
+  </div>
+
+  <input id="kb-input" type="text"
+    autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+    style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">
+
+  <script src="db.js"></script>
+  <script src="speech.js"></script>
+  <script src="rewards.js"></script>
+  <script src="bonus.js"></script>
+  <script src="game.js"></script>
+  <script>
+    // Set today's date as the default label
+    const today = new Date();
+    const label = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    document.getElementById('list-label').value = 'Week of ' + label;
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>

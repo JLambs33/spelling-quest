@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "learning_games",
+  "project_id": "80068e97-6da8-42fc-93ce-8b3fa15e6611"
+}

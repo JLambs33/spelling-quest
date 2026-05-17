@@ -1,0 +1,13 @@
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+
+# Local server / certs — not needed in the repo
+caddy.exe
+cert.pem
+key.pem
+
+# Claude local session data
+.claude/
