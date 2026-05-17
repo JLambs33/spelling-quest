@@ -677,8 +677,8 @@ html, body {
 }
 
 .attempt-pip {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   background: var(--mc-wrong);
   border: 2px solid #000;
 }
