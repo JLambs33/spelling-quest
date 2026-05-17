@@ -352,6 +352,24 @@ html, body {
 }
 
 /* ============================================================
+   Ambient mob canvas (game screen background)
+   ============================================================ */
+#game-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+#mob-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.82;
+}
+
+/* ============================================================
    Game screen header
    ============================================================ */
 .game-header {

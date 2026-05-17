@@ -160,6 +160,7 @@ function startQuest() {
   collapseNewList();
   gs = { words, wordIndex: 0, attempts: 0, correctCount: 0, wrongWords: [], results: [] };
   showScreen('game-screen');
+  ambientMobs.start();
   updateProgress();
   nextWord();
 }
@@ -408,6 +409,7 @@ function endSession() {
       : '<br><br>Perfect score! BONUS ROUND unlocked!');
   document.getElementById('bonus-btn').classList.toggle('hidden', !perfect);
   document.getElementById('play-again-btn').classList.toggle('hidden', perfect);
+  ambientMobs.stop();
   rewards.revealMob(mobIndex);
   showScreen('champion-screen');
 }
@@ -455,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
   document.getElementById('quit-btn').addEventListener('click', () => {
     awaitingInput = false;
+    ambientMobs.stop();
     showScreen('parent-screen');
   });
 
