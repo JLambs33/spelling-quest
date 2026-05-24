@@ -279,6 +279,12 @@ const readingGame = (() => {
 
     document.getElementById('reading-start-btn').addEventListener('click', startSession);
 
+    document.getElementById('reading-passage-list').addEventListener('click', e => {
+      const item = e.target.closest('.passage-list-item');
+      if (!item) return;
+      selectPassage(item.dataset.id, item.dataset.builtin === '1');
+    });
+
     document.getElementById('save-passage-btn').addEventListener('click', saveCustomPassage);
 
     // Tap-to-hear — event delegation on token container
