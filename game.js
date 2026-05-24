@@ -27,7 +27,7 @@ function showScreen(id) {
   SCREENS.forEach(s =>
     document.getElementById(s).classList.toggle('hidden', s !== id)
   );
-  document.getElementById('site-header').classList.toggle('hidden', id === 'home-screen');
+  document.getElementById('home-btn').classList.toggle('hidden', id !== 'parent-screen');
 }
 
 // ============================================================
@@ -531,9 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('parent-screen');
   });
 
-  document.getElementById('header-home-btn').addEventListener('click', () => {
-    awaitingInput = false;
-    ambientMobs.stop();
+  document.getElementById('home-btn').addEventListener('click', () => {
     showScreen('home-screen');
   });
 
