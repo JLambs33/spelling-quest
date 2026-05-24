@@ -1,7 +1,7 @@
 {
-  "name": "Spelling Quest",
-  "short_name": "Spelling",
-  "description": "Minecraft-themed spelling game",
+  "name": "PixelScholar",
+  "short_name": "PixelScholar",
+  "description": "Minecraft-themed learning game",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#1a1a1a",

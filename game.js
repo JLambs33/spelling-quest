@@ -21,12 +21,13 @@ function getWordsFromTextarea() {
 // ============================================================
 //  Screen navigation
 // ============================================================
-const SCREENS = ['parent-screen', 'game-screen', 'champion-screen', 'bonus-screen'];
+const SCREENS = ['home-screen', 'parent-screen', 'game-screen', 'champion-screen', 'bonus-screen'];
 
 function showScreen(id) {
   SCREENS.forEach(s =>
     document.getElementById(s).classList.toggle('hidden', s !== id)
   );
+  document.getElementById('site-header').classList.toggle('hidden', id === 'home-screen');
 }
 
 // ============================================================
@@ -525,6 +526,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   bonusHomeBtn.addEventListener('click',    onBonusHome);
   bonusHomeBtn.addEventListener('touchend', (e) => { e.preventDefault(); onBonusHome(); });
+
+  document.getElementById('module-spelling').addEventListener('click', () => {
+    showScreen('parent-screen');
+  });
+
+  document.getElementById('header-home-btn').addEventListener('click', () => {
+    awaitingInput = false;
+    ambientMobs.stop();
+    showScreen('home-screen');
+  });
 
   document.getElementById('export-btn').addEventListener('click', exportWordLists);
   document.getElementById('import-file').addEventListener('change', handleImportFile);

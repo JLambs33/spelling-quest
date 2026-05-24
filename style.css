@@ -959,3 +959,100 @@ html, body {
   border: 2px solid #000;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--mc-stone-light); }
+
+/* ============================================================
+   Site header (persistent — hidden on home screen)
+   ============================================================ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 8px 80px; /* left offset keeps clear of version badge */
+  background: rgba(0, 0, 0, 0.88);
+  border-bottom: 3px solid var(--mc-stone-dark);
+  width: 100%;
+}
+
+.site-header-brand {
+  font-family: var(--font-main);
+  font-size: 11px;
+  color: var(--mc-gold);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 2px;
+}
+
+/* ============================================================
+   Home screen — module grid
+   ============================================================ */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 8px;
+  background: var(--mc-panel-bg);
+  border: 4px solid #000;
+  border-top-color:    var(--mc-stone-light);
+  border-left-color:   var(--mc-stone-light);
+  border-right-color:  var(--mc-stone-dark);
+  border-bottom-color: var(--mc-stone-dark);
+  cursor: pointer;
+  font-family: var(--font-main);
+  color: var(--mc-text);
+  text-align: center;
+  transition: filter 80ms;
+  user-select: none;
+}
+
+.module-card:hover:not(.module-card--disabled) {
+  filter: brightness(1.15);
+}
+
+.module-card:active:not(.module-card--disabled) {
+  border-top-color:    var(--mc-stone-dark);
+  border-left-color:   var(--mc-stone-dark);
+  border-right-color:  var(--mc-stone-light);
+  border-bottom-color: var(--mc-stone-light);
+  transform: translate(1px, 1px);
+}
+
+.module-card--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.module-icon {
+  font-size: 18px;
+  color: var(--mc-xp);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+.module-name {
+  font-size: 9px;
+  color: var(--mc-gold);
+  text-shadow: var(--shadow-text);
+  letter-spacing: 1px;
+}
+
+.module-coming-soon {
+  font-size: 7px;
+  color: var(--mc-stone-light);
+  text-shadow: var(--shadow-text);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  border: 1px solid var(--mc-stone-dark);
+  letter-spacing: 1px;
+}
