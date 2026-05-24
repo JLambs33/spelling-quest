@@ -409,12 +409,14 @@ html, body {
 /* ============================================================
    Ambient mob canvas (game screen background)
    ============================================================ */
-#game-screen {
+#game-screen,
+#reading-game-screen {
   position: relative;
   isolation: isolate;
 }
 
-#mob-canvas {
+#mob-canvas,
+#reading-mob-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1012,11 +1014,29 @@ html, body {
 }
 
 /* ============================================================
+   Reading module — custom passage question blocks
+   ============================================================ */
+.passage-question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 2px solid var(--mc-stone-dark);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.passage-question-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================================
    Reading module — game screen (reading-game-screen)
    ============================================================ */
 .reading-passage-area {
   width: 100%;
-  max-width: 620px;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1033,7 +1053,6 @@ html, body {
 
 .reading-word-tokens {
   width: 100%;
-  max-width: 560px;
   background: var(--mc-panel-bg);
   border: 4px solid #000;
   border-top-color:    var(--mc-stone-light);
@@ -1075,7 +1094,7 @@ html, body {
 
 .reading-question-area {
   width: 100%;
-  max-width: 560px;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1083,12 +1102,20 @@ html, body {
 }
 
 .reading-question-text {
-  font-size: clamp(12px, 2.5vw, 16px);
-  color: var(--mc-text);
-  text-shadow: var(--shadow-text);
+  width: 100%;
+  background: var(--mc-panel-bg);
+  border: 4px solid #000;
+  border-top-color:    var(--mc-stone-light);
+  border-left-color:   var(--mc-stone-light);
+  border-right-color:  var(--mc-stone-dark);
+  border-bottom-color: var(--mc-stone-dark);
+  padding: 18px 20px;
   text-align: center;
-  line-height: 1.8;
-  max-width: 480px;
+  line-height: 2.8;
+}
+
+.reading-question-text .word-token {
+  font-size: clamp(16px, 3.5vw, 22px);
 }
 
 .reading-options {
@@ -1096,12 +1123,11 @@ html, body {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: 480px;
 }
 
 .reading-option {
   font-family: var(--font-main);
-  font-size: clamp(10px, 2vw, 13px);
+  font-size: clamp(13px, 2.5vw, 16px);
   color: var(--mc-text);
   background: var(--mc-stone);
   border-top:    3px solid var(--mc-stone-light);

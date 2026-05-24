@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="version-badge">v0.1.24</div>
+  <div id="version-badge">v0.1.25</div>
   <button id="home-btn" class="home-btn hidden">&#8962; Home</button>
 
   <!-- ===================== HOME SCREEN ===================== -->
@@ -137,12 +137,9 @@
         <label class="mc-label" for="passage-text-input">Passage Text</label>
         <textarea id="passage-text-input" class="mc-textarea" rows="6" placeholder="Enter the reading passage here..."></textarea>
 
-        <label class="mc-label" for="passage-q-input">Comprehension Question</label>
-        <input id="passage-q-input" class="mc-input" type="text" maxlength="120" placeholder="What is the passage about?">
+        <div id="passage-questions-container"></div>
 
-        <label class="mc-label" for="passage-options-input">Answer Choices <span class="label-hint">(one per line &mdash; first line = correct)</span></label>
-        <textarea id="passage-options-input" class="mc-textarea" rows="4" placeholder="correct answer&#10;wrong choice 2&#10;wrong choice 3&#10;wrong choice 4"></textarea>
-
+        <button id="add-question-btn" class="mc-button mc-button--small">+ Add Question</button>
         <button id="save-passage-btn" class="mc-button">&#128190; Save Passage</button>
       </div>
     </div>
@@ -155,6 +152,7 @@
 
   <!-- ================= READING GAME SCREEN ================== -->
   <div id="reading-game-screen" class="screen hidden">
+    <canvas id="reading-mob-canvas"></canvas>
     <div class="game-header">
       <div class="progress-wrap">
         <span class="progress-label">Questions:</span>
@@ -172,7 +170,7 @@
     </div>
 
     <div id="reading-question-area" class="reading-question-area hidden">
-      <p id="reading-question-text" class="reading-question-text"></p>
+      <div id="reading-question-text" class="reading-question-text"></div>
       <div id="reading-options" class="reading-options"></div>
     </div>
   </div>
@@ -196,10 +194,6 @@
 
     <div id="game-area" class="game-area">
       <!-- Mechanic UI injected here by game.js -->
-    </div>
-
-    <div id="word-feedback" class="word-feedback hidden">
-      <!-- ✓ / ✗ feedback injected here -->
     </div>
 
   </div>
@@ -232,6 +226,8 @@
     <canvas id="bonus-canvas" class="bonus-canvas"></canvas>
     <button id="bonus-home-btn" class="mc-button hidden">&#8592; Back to Home</button>
   </div>
+
+  <div id="word-feedback" class="word-feedback hidden"></div>
 
   <input id="kb-input" type="text"
     autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"

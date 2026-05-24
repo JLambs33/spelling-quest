@@ -9,6 +9,7 @@ const readingGame = (() => {
 
   // ── state ─────────────────────────────────────────────────────
   let selectedPassage = null;
+  let qBlockUid = 0;
 
   let rs = {
     passage: null,
@@ -84,20 +85,67 @@ const readingGame = (() => {
     arrow.innerHTML = hidden ? '&#9660;' : '&#9654;';
   }
 
-  function saveCustomPassage() {
-    const title  = document.getElementById('passage-title-input').value.trim();
-    const text   = document.getElementById('passage-text-input').value.trim();
-    const qText  = document.getElementById('passage-q-input').value.trim();
-    const opts   = document.getElementById('passage-options-input').value
-                     .split('\n').map(l => l.trim()).filter(Boolean);
-    const level  = document.getElementById('reading-level-select').value;
+  function questionBlockHtml(uid) {
+    return `
+      <div class="passage-question-block" data-uid="${uid}">
+        <div class="passage-question-block-header">
+          <span class="mc-label question-num-label"></span>
+          <button class="mc-button mc-button--small mc-button--red remove-question-btn hidden"
+                  data-uid="${uid}">&#10005;</button>
+        </div>
+        <input class="mc-input passage-q-input" type="text" maxlength="120"
+               placeholder="What is the passage about?">
+        <label class="mc-label">Answer Choices
+          <span class="label-hint">(one per line &mdash; first = correct)</span>
+        </label>
+        <textarea class="mc-textarea passage-options-input" rows="4"
+                  placeholder="correct answer&#10;wrong choice 2&#10;wrong choice 3&#10;wrong choice 4"></textarea>
+      </div>`;
+  }
 
-    if (!title || !text || !qText || opts.length < 2) {
-      alert('Please fill in the title, passage text, question, and at least 2 answer choices.');
+  function updateQuestionLabels() {
+    const blocks = document.querySelectorAll('#passage-questions-container .passage-question-block');
+    const multi  = blocks.length > 1;
+    blocks.forEach((b, i) => {
+      b.querySelector('.question-num-label').textContent = multi ? `Question ${i + 1}` : 'Comprehension Question';
+      b.querySelector('.remove-question-btn').classList.toggle('hidden', !multi);
+    });
+  }
+
+  function addQuestionBlock() {
+    document.getElementById('passage-questions-container')
+      .insertAdjacentHTML('beforeend', questionBlockHtml(++qBlockUid));
+    updateQuestionLabels();
+  }
+
+  function resetQuestionBlocks() {
+    document.getElementById('passage-questions-container').innerHTML = '';
+    addQuestionBlock();
+  }
+
+  function saveCustomPassage() {
+    const title = document.getElementById('passage-title-input').value.trim();
+    const text  = document.getElementById('passage-text-input').value.trim();
+    const level = document.getElementById('reading-level-select').value;
+
+    if (!title || !text) {
+      alert('Please fill in the title and passage text.');
       return;
     }
 
-    while (opts.length < 4) opts.push('—');
+    const blocks = document.querySelectorAll('#passage-questions-container .passage-question-block');
+    const questions = [];
+    for (const block of blocks) {
+      const qText = block.querySelector('.passage-q-input').value.trim();
+      const opts  = block.querySelector('.passage-options-input').value
+                      .split('\n').map(l => l.trim()).filter(Boolean);
+      if (!qText || opts.length < 2) {
+        alert('Each question needs question text and at least 2 answer choices.');
+        return;
+      }
+      while (opts.length < 4) opts.push('—');
+      questions.push({ q: qText, options: opts.slice(0, 4), correct: 0 });
+    }
 
     const entry = {
       id: Date.now(),
@@ -105,16 +153,15 @@ const readingGame = (() => {
       type: 'custom',
       title,
       text,
-      questions: [{ q: qText, options: opts.slice(0, 4), correct: 0 }],
+      questions,
       dateAdded: Date.now(),
     };
 
     savePassageSet(entry);
 
-    document.getElementById('passage-title-input').value   = '';
-    document.getElementById('passage-text-input').value    = '';
-    document.getElementById('passage-q-input').value       = '';
-    document.getElementById('passage-options-input').value = '';
+    document.getElementById('passage-title-input').value = '';
+    document.getElementById('passage-text-input').value  = '';
+    resetQuestionBlocks();
 
     document.getElementById('new-passage-body').classList.add('hidden');
     document.getElementById('new-passage-arrow').innerHTML = '&#9654;';
@@ -168,6 +215,7 @@ const readingGame = (() => {
     document.getElementById('change-words-btn').innerHTML = '&#8592; Change Passage';
 
     showScreen('reading-game-screen');
+    ambientMobs.start('reading-mob-canvas');
     updateProgress();
     renderPassageView();
   }
@@ -199,7 +247,12 @@ const readingGame = (() => {
 
     const { options, correctIndex } = shuffleOptions(q.options, q.correct);
 
-    document.getElementById('reading-question-text').textContent = q.q;
+    const qTokens = q.q.trim().split(/\s+/);
+    document.getElementById('reading-question-text').innerHTML = qTokens.map(token => {
+      const word = token.replace(/[^a-zA-Z']/g, '');
+      return `<button class="word-token" data-word="${escHtml(word)}">${escHtml(token)}</button>`;
+    }).join(' ');
+
     document.getElementById('reading-options').innerHTML = options.map((opt, i) =>
       `<button class="reading-option" data-index="${i}" data-correct="${correctIndex}">${escHtml(opt)}</button>`
     ).join('');
@@ -249,6 +302,7 @@ const readingGame = (() => {
   }
 
   function endSession() {
+    ambientMobs.stop();
     const perfect   = rs.wrongQuestions.length === 0;
     const mobIndex  = getMobIndex();
     incrementMobIndex();
@@ -285,6 +339,17 @@ const readingGame = (() => {
       selectPassage(item.dataset.id, item.dataset.builtin === '1');
     });
 
+    addQuestionBlock();
+
+    document.getElementById('add-question-btn').addEventListener('click', addQuestionBlock);
+
+    document.getElementById('passage-questions-container').addEventListener('click', e => {
+      const btn = e.target.closest('.remove-question-btn');
+      if (!btn) return;
+      btn.closest('.passage-question-block').remove();
+      updateQuestionLabels();
+    });
+
     document.getElementById('save-passage-btn').addEventListener('click', saveCustomPassage);
 
     // Tap-to-hear — event delegation on token container
@@ -302,7 +367,14 @@ const readingGame = (() => {
       handleAnswer(parseInt(btn.dataset.index, 10), parseInt(btn.dataset.correct, 10));
     });
 
+    // Tap-to-hear words in question text
+    document.getElementById('reading-question-text').addEventListener('click', e => {
+      const btn = e.target.closest('.word-token');
+      if (btn && btn.dataset.word) speech.speak(btn.dataset.word);
+    });
+
     document.getElementById('reading-quit-btn').addEventListener('click', () => {
+      ambientMobs.stop();
       showScreen('reading-screen');
     });
 

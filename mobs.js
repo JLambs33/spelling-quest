@@ -359,8 +359,8 @@ const ambientMobs = (() => {
   }
 
   // ── public API ────────────────────────────────────────────────
-  function start() {
-    canvas    = document.getElementById('mob-canvas');
+  function start(canvasId = 'mob-canvas') {
+    canvas    = document.getElementById(canvasId);
     mobs      = [];
     elapsed   = 0;
     nextSpawn = 1.5;
