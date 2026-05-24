@@ -5,17 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Spelling Quest">
+  <meta name="apple-mobile-web-app-title" content="PixelScholar">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <title>Spelling Quest</title>
+  <title>PixelScholar</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="version-badge">v0.1.22</div>
+  <div id="version-badge">v0.1.23</div>
+  <button id="home-btn" class="home-btn hidden">&#8962; Home</button>
+
+  <!-- ===================== HOME SCREEN ===================== -->
+  <div id="home-screen" class="screen">
+    <div class="title-block">
+      <h1 class="game-title">Pixel<br>Scholar</h1>
+      <p class="game-subtitle">Minecraft Edition</p>
+    </div>
+    <div class="module-grid">
+      <button class="module-card" id="module-spelling">
+        <span class="module-icon">ABC</span>
+        <span class="module-name">Spelling</span>
+      </button>
+      <div class="module-card module-card--disabled">
+        <span class="module-icon">📖</span>
+        <span class="module-name">Reading</span>
+        <span class="module-coming-soon">Coming Soon</span>
+      </div>
+      <div class="module-card module-card--disabled">
+        <span class="module-icon">123</span>
+        <span class="module-name">Math</span>
+        <span class="module-coming-soon">Coming Soon</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ===================== PARENT SCREEN ===================== -->
-  <div id="parent-screen" class="screen">
+  <div id="parent-screen" class="screen hidden">
     <div class="title-block">
       <h1 class="game-title">Spelling<br>Quest</h1>
       <p class="game-subtitle">Minecraft Edition</p>
