@@ -511,6 +511,11 @@ const sceneBg = (() => {
     rafId = requestAnimationFrame(frame);
   }
 
+  function isDaytime() {
+    const t = cycleTime(performance.now());
+    return t >= 0.28 && t <= 0.72;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     resize();
     initLeaves();
@@ -527,4 +532,6 @@ const sceneBg = (() => {
       }
     });
   });
+
+  return { isDaytime };
 })();
