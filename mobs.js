@@ -12,20 +12,27 @@ const ambientMobs = (() => {
   const SPD_MIN         = 18;
   const SPD_MAX         = 72;
   const VY_MAX          = 18;
-  const BURN_DURATION   = 2.5;    // seconds undead burn before disappearing
-  const TELEPORT_CHANCE = 0.45;   // probability enderman teleports on turn
+  const BURN_DURATION   = 4.5;
+  const TELEPORT_CHANCE = 0.45;
 
   const TYPES = [
-    { kind: 'zombie',   w: 20, h: 36, weight: 4 },
-    { kind: 'skeleton', w: 20, h: 36, weight: 4 },
-    { kind: 'spider',   w: 30, h: 14, weight: 3 },
-    { kind: 'cow',      w: 28, h: 24, weight: 3 },
-    { kind: 'pig',      w: 24, h: 20, weight: 3 },
-    { kind: 'chicken',  w: 16, h: 18, weight: 3 },
-    { kind: 'enderman', w: 12, h: 52, weight: 1 },
+    { kind: 'zombie',           w: 20, h: 36, weight: 4 },
+    { kind: 'skeleton',         w: 20, h: 36, weight: 4 },
+    { kind: 'baby_zombie',      w: 12, h: 22, weight: 2, speedMult: 1.7 },
+    { kind: 'creeper',          w: 20, h: 36, weight: 3 },
+    { kind: 'spider',           w: 30, h: 14, weight: 3 },
+    { kind: 'cow',              w: 28, h: 24, weight: 3 },
+    { kind: 'pig',              w: 24, h: 20, weight: 3 },
+    { kind: 'chicken',          w: 16, h: 18, weight: 3 },
+    { kind: 'wolf',             w: 26, h: 20, weight: 2 },
+    { kind: 'wandering_trader', w: 66, h: 38, weight: 1 },
+    { kind: 'enderman',         w: 12, h: 52, weight: 1 },
   ];
 
-  const UNDEAD       = new Set(['zombie', 'skeleton']);
+  // Undead burn in daylight; day-only mobs leave when night falls
+  const UNDEAD   = new Set(['zombie', 'skeleton', 'baby_zombie']);
+  const DAY_ONLY = new Set(['cow', 'pig', 'chicken', 'wolf', 'wandering_trader']);
+
   const FLAME_COLORS = ['#FF4400', '#FF6600', '#FFAA00', '#FF2200', '#FFCC00'];
 
   // ── state ─────────────────────────────────────────────────────
@@ -38,8 +45,6 @@ const ambientMobs = (() => {
 
   // ── helpers ───────────────────────────────────────────────────
 
-  // Returns the y-coordinate of the top of the bottom grass area,
-  // matching bg.js's ground layout (3 block rows below H*0.45).
   function groundY() {
     const bs = Math.min(40, Math.max(16, Math.floor(canvas.width / 18)));
     return canvas.height * 0.45 + bs * 3;
@@ -57,13 +62,16 @@ const ambientMobs = (() => {
 
   function spawnMob() {
     const day  = sceneBg.isDaytime();
-    const pool = day ? TYPES.filter(t => !UNDEAD.has(t.kind)) : TYPES;
-    const t    = pickTypeFrom(pool);
+    const pool = TYPES.filter(t =>
+      !(day  && UNDEAD.has(t.kind)) &&
+      !(!day && DAY_ONLY.has(t.kind))
+    );
+    const t        = pickTypeFrom(pool);
     const fromLeft = Math.random() < 0.5;
-    const gY   = groundY();
-    const x    = fromLeft ? -t.w - 10 : canvas.width + 10;
-    const y    = gY + Math.random() * (canvas.height * 0.35);
-    const spd  = pickSpd();
+    const gY       = groundY();
+    const x        = fromLeft ? -t.w - 10 : canvas.width + 10;
+    const y        = gY + Math.random() * (canvas.height * 0.35);
+    const spd      = pickSpd() * (t.speedMult || 1);
     return {
       kind: t.kind, w: t.w, h: t.h,
       x, y,
@@ -77,7 +85,8 @@ const ambientMobs = (() => {
     };
   }
 
-  // ── teleport particles ────────────────────────────────────────
+  // ── particles ─────────────────────────────────────────────────
+
   function spawnTeleportParticles(cx, cy, count = 14) {
     for (let i = 0; i < count; i++) {
       const life = rand(0.35, 0.70);
@@ -86,8 +95,21 @@ const ambientMobs = (() => {
         vx: rand(-70, 70),   vy: rand(-70, 70),
         life, maxLife: life,
         size: 2 + Math.floor(Math.random() * 3),
+        color: '#8800FF',
       });
     }
+  }
+
+  function spawnFireParticle(cx, cy) {
+    const life = rand(0.5, 1.0);
+    particles.push({
+      x: cx + rand(-4, 4), y: cy,
+      vx: rand(-12, 12),
+      vy: rand(-45, -18),
+      life, maxLife: life,
+      size: 2 + Math.floor(Math.random() * 3),
+      color: FLAME_COLORS[Math.floor(Math.random() * FLAME_COLORS.length)],
+    });
   }
 
   function updateParticles(dt) {
@@ -102,26 +124,39 @@ const ambientMobs = (() => {
 
   function drawParticles() {
     for (const p of particles) {
-      const a = (p.life / p.maxLife).toFixed(2);
-      ctx.fillStyle = `rgba(140,0,255,${a})`;
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.fillStyle   = p.color;
       ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
     }
+    ctx.globalAlpha = 1;
   }
 
   // ── update ────────────────────────────────────────────────────
   function update(dt) {
     elapsed += dt;
 
-    // Day/night transition — ignite all on-screen undead when day breaks
     const day = sceneBg.isDaytime();
+
+    // Night → day: ignite all on-screen undead
     if (day && !wasDay) {
       for (const m of mobs) {
         if (UNDEAD.has(m.kind) && !m.burning) {
           m.burning   = true;
           m.burnTimer = BURN_DURATION;
+          m.paused    = false;
         }
       }
     }
+
+    // Day → night: send day-only mobs home so undead can spawn quickly
+    if (!day && wasDay) {
+      for (const m of mobs) {
+        if (DAY_ONLY.has(m.kind) && !m.leaving && Math.random() < 0.80) {
+          m.leaving = true;
+        }
+      }
+    }
+
     wasDay = day;
 
     if (mobs.length < MAX_ON_SCREEN && elapsed >= nextSpawn) {
@@ -135,17 +170,19 @@ const ambientMobs = (() => {
     const yMax = canvas.height * 0.88;
 
     for (const m of mobs) {
-      // Burning mobs freeze in place and count down
+      // Burning: tick timer, spawn fire particles, then fall through to move
       if (m.burning) {
         m.burnTimer -= dt;
-        continue;
+        if (Math.random() < 0.7) {
+          spawnFireParticle(m.x + rand(0, m.w), m.y + rand(m.h * 0.2, m.h * 0.8));
+        }
       }
 
       if (m.paused) {
         m.pauseTimer -= dt;
         if (m.pauseTimer <= 0) {
           m.paused = false;
-          m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd();
+          m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd() * (TYPES.find(t => t.kind === m.kind)?.speedMult || 1);
           m.vy = rand(-VY_MAX, VY_MAX);
           m.turnTimer = rand(TURN_MIN, TURN_MAX);
         }
@@ -156,8 +193,8 @@ const ambientMobs = (() => {
       m.y += m.vy * dt;
       if (m.vx !== 0) m.facing = m.vx > 0 ? 1 : -1;
 
-      if (m.y < yMin)          { m.y = yMin;          m.vy =  Math.abs(m.vy); }
-      if (m.y + m.h > yMax)   { m.y = yMax - m.h;    m.vy = -Math.abs(m.vy); }
+      if (m.y < yMin)        { m.y = yMin;       m.vy =  Math.abs(m.vy); }
+      if (m.y + m.h > yMax) { m.y = yMax - m.h; m.vy = -Math.abs(m.vy); }
 
       if (!m.entered && m.x > 0 && m.x + m.w < canvas.width) m.entered = true;
 
@@ -165,7 +202,6 @@ const ambientMobs = (() => {
         m.turnTimer -= dt;
         if (m.turnTimer <= 0) {
           if (m.kind === 'enderman' && Math.random() < TELEPORT_CHANCE) {
-            // Enderman teleport — particles at origin, snap, particles at destination
             spawnTeleportParticles(m.x + m.w / 2, m.y + m.h / 2);
             m.x = rand(40, canvas.width - m.w - 40);
             m.y = rand(yMin, Math.min(yMin + canvas.height * 0.30, yMax - m.h));
@@ -181,13 +217,14 @@ const ambientMobs = (() => {
               m.paused = true; m.vx = 0; m.vy = 0;
               m.pauseTimer = rand(PAUSE_MIN, PAUSE_MAX);
             } else {
-              m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd();
+              const sm = TYPES.find(t => t.kind === m.kind)?.speedMult || 1;
+              m.vx = (Math.random() < 0.5 ? 1 : -1) * pickSpd() * sm;
               m.vy = rand(-VY_MAX, VY_MAX);
             }
           }
           m.turnTimer = rand(TURN_MIN, TURN_MAX);
         }
-        if (m.x < 30 && m.vx < 0)                     m.vx =  Math.abs(m.vx);
+        if (m.x < 30 && m.vx < 0)                      m.vx =  Math.abs(m.vx);
         if (m.x + m.w > canvas.width - 30 && m.vx > 0) m.vx = -Math.abs(m.vx);
       }
     }
@@ -200,23 +237,14 @@ const ambientMobs = (() => {
 
   // ── drawing ───────────────────────────────────────────────────
 
-  function drawFlames(x, y, w, h) {
-    ctx.save();
-    ctx.globalAlpha = 1;
-    for (let i = 0; i < 10; i++) {
-      const fx = x + Math.random() * (w + 4) - 2;
-      const fy = y + Math.random() * h * 1.1 - h * 0.15;
-      const fs = 2 + Math.floor(Math.random() * 4);
-      ctx.fillStyle = FLAME_COLORS[Math.floor(Math.random() * FLAME_COLORS.length)];
-      ctx.fillRect(Math.round(fx), Math.round(fy), fs, fs);
-    }
-    ctx.restore();
-  }
-
   function drawMob(m) {
     ctx.save();
     if (m.burning) ctx.globalAlpha = Math.max(0.15, m.burnTimer / BURN_DURATION);
-    if (m.facing < 0) {
+
+    // Wandering trader handles its own facing since it's a composite sprite
+    if (m.kind === 'wandering_trader') {
+      drawWanderingTrader(m.x, m.y, m.w, m.h, m.facing);
+    } else if (m.facing < 0) {
       ctx.translate(m.x + m.w, m.y);
       ctx.scale(-1, 1);
       drawShape(m, 0, 0);
@@ -224,20 +252,24 @@ const ambientMobs = (() => {
       drawShape(m, m.x, m.y);
     }
     ctx.restore();
-    if (m.burning) drawFlames(m.x, m.y, m.w, m.h);
   }
 
   function drawShape(m, x, y) {
     switch (m.kind) {
-      case 'zombie':   return drawZombie(x, y, m.w, m.h);
-      case 'skeleton': return drawSkeleton(x, y, m.w, m.h);
-      case 'spider':   return drawSpider(x, y, m.w, m.h);
-      case 'cow':      return drawCow(x, y, m.w, m.h);
-      case 'pig':      return drawPig(x, y, m.w, m.h);
-      case 'chicken':  return drawChicken(x, y, m.w, m.h);
-      case 'enderman': return drawEnderman(x, y, m.w, m.h);
+      case 'zombie':
+      case 'baby_zombie':  return drawZombie(x, y, m.w, m.h);
+      case 'skeleton':     return drawSkeleton(x, y, m.w, m.h);
+      case 'creeper':      return drawCreeper(x, y, m.w, m.h);
+      case 'spider':       return drawSpider(x, y, m.w, m.h);
+      case 'cow':          return drawCow(x, y, m.w, m.h);
+      case 'pig':          return drawPig(x, y, m.w, m.h);
+      case 'chicken':      return drawChicken(x, y, m.w, m.h);
+      case 'wolf':         return drawWolf(x, y, m.w, m.h);
+      case 'enderman':     return drawEnderman(x, y, m.w, m.h);
     }
   }
+
+  // ── mob sprites ───────────────────────────────────────────────
 
   function drawZombie(x, y, w, h) {
     const headH = Math.round(h * 0.38);
@@ -285,24 +317,65 @@ const ambientMobs = (() => {
     }
     const lw = Math.round(bw / 2) - 2;
     ctx.fillStyle = '#B8B8B8';
-    ctx.fillRect(x + armW + 1,      y + headH + bodyH,                          lw, legH);
+    ctx.fillRect(x + armW + 1,      y + headH + bodyH,                           lw, legH);
     ctx.fillRect(x + armW + lw + 3, y + headH + bodyH + Math.round(legH * 0.15), lw, legH - Math.round(legH * 0.15));
+  }
+
+  function drawCreeper(x, y, w, h) {
+    const headH = Math.round(h * 0.40);
+    const bodyH = Math.round(h * 0.36);
+    const legH  = h - headH - bodyH;
+    const headW = Math.round(w * 0.80);
+    const hx    = x + Math.round((w - headW) / 2);
+    // Head
+    ctx.fillStyle = '#1E7A1E';
+    ctx.fillRect(hx, y, headW, headH);
+    // Eyes
+    ctx.fillStyle = '#000';
+    const ew = Math.round(headW * 0.22);
+    const eh = Math.round(headH * 0.22);
+    ctx.fillRect(hx + Math.round(headW * 0.12), y + Math.round(headH * 0.20), ew, eh);
+    ctx.fillRect(hx + Math.round(headW * 0.64), y + Math.round(headH * 0.20), ew, eh);
+    // Mouth (creeper pattern: wide bar, two stems down)
+    const mx  = hx + Math.round(headW * 0.22);
+    const my  = y  + Math.round(headH * 0.54);
+    const mw  = Math.round(headW * 0.56);
+    const mh  = Math.round(headH * 0.32);
+    const sw  = Math.round(mw * 0.30);
+    const bar = Math.round(mh * 0.38);
+    ctx.fillRect(mx, my, mw, bar);
+    ctx.fillRect(mx, my + bar, sw, mh - bar);
+    ctx.fillRect(mx + mw - sw, my + bar, sw, mh - bar);
+    // Body
+    const bx = x + Math.round(w * 0.12);
+    const bw = Math.round(w * 0.76);
+    ctx.fillStyle = '#1A6A1A';
+    ctx.fillRect(bx, y + headH, bw, bodyH);
+    // Legs (two pairs)
+    ctx.fillStyle = '#166016';
+    const lw = Math.round(bw * 0.30);
+    const lg = Math.round(bw * 0.08);
+    ctx.fillRect(bx + lg,            y + headH + bodyH, lw, legH);
+    ctx.fillRect(bx + bw - lw - lg,  y + headH + bodyH, lw, legH);
   }
 
   function drawSpider(x, y, w, h) {
     const bw   = Math.round(w * 0.46);
     const bx   = x + Math.round((w - bw) / 2);
     const legL = Math.round(w * 0.27);
-    ctx.fillStyle = '#3A2A1A';
+    // Legs — near-black
+    ctx.fillStyle = '#111111';
     for (let i = 0; i < 4; i++) {
       const ly = y + Math.round(h * 0.28) + i * Math.round(h * 0.18);
       ctx.fillRect(bx - legL, ly, legL, 2);
       ctx.fillRect(bx + bw,   ly, legL, 2);
     }
-    ctx.fillStyle = '#4A3020';
+    // Body
+    ctx.fillStyle = '#161210';
     ctx.fillRect(bx, y + Math.round(h * 0.12), bw, Math.round(h * 0.65));
     const hw = Math.round(bw * 0.62);
     ctx.fillRect(bx + Math.round((bw - hw) / 2), y, hw, Math.round(h * 0.5));
+    // Red eyes
     ctx.fillStyle = '#CC0000';
     ctx.fillRect(bx + 2, y + 2, 3, 3);
     ctx.fillRect(bx + hw - 5, y + 2, 3, 3);
@@ -384,6 +457,51 @@ const ambientMobs = (() => {
     ctx.fillRect(bx + Math.round(bw * 0.62) - 2, y + h - 2, ll + 4, 2);
   }
 
+  function drawWolf(x, y, w, h) {
+    const headH = Math.round(h * 0.42);
+    const bodyH = Math.round(h * 0.36);
+    const legH  = h - headH - bodyH;
+    // Body
+    ctx.fillStyle = '#8A8A8A';
+    ctx.fillRect(x + 3, y + headH, w - 6, bodyH);
+    // Belly (lighter)
+    ctx.fillStyle = '#BBBBBB';
+    ctx.fillRect(x + 5, y + headH + Math.round(bodyH * 0.3), w - 10, Math.round(bodyH * 0.5));
+    // Tail (angled upward from rear)
+    ctx.fillStyle = '#6A6A6A';
+    ctx.fillRect(x + w - 5, y + headH - 5, 3, 8);
+    ctx.fillRect(x + w - 7, y + headH - 8, 3, 4);
+    // Head
+    const hw = Math.round(w * 0.58);
+    ctx.fillStyle = '#7A7A7A';
+    ctx.fillRect(x, y, hw, headH);
+    // Snout (slightly lighter)
+    ctx.fillStyle = '#999999';
+    const snoutW = Math.round(hw * 0.52);
+    const snoutH = Math.round(headH * 0.40);
+    ctx.fillRect(x, y + Math.round(headH * 0.55), snoutW, snoutH);
+    // Nose
+    ctx.fillStyle = '#111';
+    ctx.fillRect(x, y + Math.round(headH * 0.55), Math.round(snoutW * 0.35), 2);
+    // Eye
+    ctx.fillStyle = '#1A1A1A';
+    ctx.fillRect(x + Math.round(hw * 0.52), y + Math.round(headH * 0.22), 2, 2);
+    // Ears (triangular — two stacked rects)
+    ctx.fillStyle = '#5A5A5A';
+    ctx.fillRect(x + Math.round(hw * 0.20), y - 5, 4, 5);
+    ctx.fillRect(x + Math.round(hw * 0.52), y - 5, 4, 5);
+    ctx.fillStyle = '#CC8888';
+    ctx.fillRect(x + Math.round(hw * 0.21), y - 4, 2, 3);
+    ctx.fillRect(x + Math.round(hw * 0.53), y - 4, 2, 3);
+    // Legs
+    ctx.fillStyle = '#6A6A6A';
+    const lw = Math.max(3, Math.round(w * 0.11));
+    ctx.fillRect(x + 4,                   y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + 4 + lw + 2,          y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + w - 6 - lw * 2,      y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + w - 5 - lw,          y + headH + bodyH, lw, legH);
+  }
+
   function drawEnderman(x, y, w, h) {
     ctx.fillStyle = '#0D0D1A';
     ctx.fillRect(x, y, w, h);
@@ -396,6 +514,93 @@ const ambientMobs = (() => {
     ctx.fillRect(x + w - ew - 1, y + Math.floor(headH * 0.35), ew, 2);
     ctx.fillStyle = 'rgba(100,0,180,0.15)';
     ctx.fillRect(x, y + headH, w, h - headH);
+  }
+
+  // ── wandering trader (composite — handles its own facing) ─────
+
+  function drawWanderingTrader(x, y, w, h, facing) {
+    const tW = 14, lW = 22, gap = 4;
+    if (facing >= 0) {
+      // Right-facing: trader leads at left, llamas trail to right
+      _drawTrader(x, y, tW, h, 1);
+      _drawLlama(x + tW + gap,            y + 3, lW, h - 3, 1);
+      _drawLlama(x + tW + gap + lW + gap, y + 3, lW, h - 3, 1);
+    } else {
+      // Left-facing: trader leads at right, llamas trail to left
+      _drawTrader(x + w - tW, y, tW, h, -1);
+      _drawLlama(x + w - tW - gap - lW,            y + 3, lW, h - 3, -1);
+      _drawLlama(x + w - tW - gap - lW * 2 - gap,  y + 3, lW, h - 3, -1);
+    }
+  }
+
+  function _drawTrader(x, y, w, h, facing) {
+    ctx.save();
+    if (facing < 0) { ctx.translate(x + w, y); ctx.scale(-1, 1); x = 0; y = 0; }
+    const headH = Math.round(h * 0.26);
+    const bodyH = Math.round(h * 0.46);
+    const legH  = h - headH - bodyH;
+    // Hat brim + crown
+    ctx.fillStyle = '#2244BB';
+    ctx.fillRect(x - 2, y + Math.round(headH * 0.10), w + 4, Math.round(headH * 0.22));
+    ctx.fillRect(x + 1, y - Math.round(headH * 0.40), w - 2, Math.round(headH * 0.52));
+    // Head
+    ctx.fillStyle = '#F5C99A';
+    ctx.fillRect(x + 2, y + Math.round(headH * 0.30), w - 4, Math.round(headH * 0.65));
+    // Eye
+    ctx.fillStyle = '#222';
+    ctx.fillRect(x + Math.round(w * 0.60), y + Math.round(headH * 0.44), 2, 2);
+    // Robes
+    ctx.fillStyle = '#3355CC';
+    ctx.fillRect(x + 1, y + headH, w - 2, bodyH);
+    ctx.fillStyle = '#4466EE';
+    ctx.fillRect(x + 2, y + headH + 2, 2, bodyH - 4);
+    // Legs
+    ctx.fillStyle = '#222244';
+    const lw = Math.floor((w - 4) / 2);
+    ctx.fillRect(x + 2,          y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + 2 + lw + 1, y + headH + bodyH, lw, legH);
+    ctx.restore();
+  }
+
+  function _drawLlama(x, y, w, h, facing) {
+    ctx.save();
+    if (facing < 0) { ctx.translate(x + w, y); ctx.scale(-1, 1); x = 0; y = 0; }
+    const headH = Math.round(h * 0.26);
+    const neckH = Math.round(h * 0.20);
+    const bodyH = Math.round(h * 0.30);
+    const legH  = h - headH - neckH - bodyH;
+    // Body
+    ctx.fillStyle = '#C8B890';
+    ctx.fillRect(x + 2, y + headH + neckH, w - 4, bodyH);
+    // Cargo
+    ctx.fillStyle = '#CC4422';
+    ctx.fillRect(x + Math.round(w * 0.52), y + headH + neckH + 2,
+                 Math.round(w * 0.34), Math.round(bodyH * 0.60));
+    // Neck
+    const nw = Math.round(w * 0.28);
+    ctx.fillStyle = '#B8A880';
+    ctx.fillRect(x + Math.round(w * 0.12), y + headH, nw, neckH);
+    // Head
+    const hw = Math.round(w * 0.52);
+    ctx.fillStyle = '#C8B890';
+    ctx.fillRect(x, y, hw, headH);
+    // Ear
+    ctx.fillStyle = '#A89868';
+    ctx.fillRect(x + Math.round(hw * 0.62), y - 4, 3, 5);
+    // Eye
+    ctx.fillStyle = '#333';
+    ctx.fillRect(x + Math.round(hw * 0.66), y + Math.round(headH * 0.25), 2, 2);
+    // Snout
+    ctx.fillStyle = '#B8A870';
+    ctx.fillRect(x, y + Math.round(headH * 0.60), Math.round(hw * 0.48), Math.round(headH * 0.36));
+    // Legs
+    ctx.fillStyle = '#A89868';
+    const lw = Math.max(2, Math.round(w * 0.12));
+    ctx.fillRect(x + 3,                y + headH + neckH + bodyH, lw, legH);
+    ctx.fillRect(x + 3 + lw + 2,       y + headH + neckH + bodyH, lw, legH);
+    ctx.fillRect(x + w - 4 - lw * 2,   y + headH + neckH + bodyH, lw, legH);
+    ctx.fillRect(x + w - 3 - lw,       y + headH + neckH + bodyH, lw, legH);
+    ctx.restore();
   }
 
   // ── render ────────────────────────────────────────────────────
