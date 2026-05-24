@@ -196,37 +196,37 @@ chore/*     ← staging → main promotions and housekeeping
 
 1. Check out `staging` and pull latest: `git checkout staging && git pull`
 2. Cut a new branch from `staging`:
-   - Feature: `git checkout -b feature/sq-N-short-description`
-   - Bug fix: `git checkout -b bugfix/sq-N-short-description`
+   - Feature: `git checkout -b feature/ps-N-short-description`
+   - Bug fix: `git checkout -b bugfix/ps-N-short-description`
 3. Do the work, commit with the story number in the message (see below)
 4. Notify the user to test locally via `python serve.py`
 5. On approval, open a PR from the feature/bugfix branch into `staging`
 
 ### Promoting staging → main
 
-1. Use branch name `chore/staging-to-main` (or `chore/sq-N-release` if tied to a story)
+1. Use branch name `chore/staging-to-main` (or `chore/ps-N-release` if tied to a story)
 2. PR description must list every story/change being promoted (not just "merge staging")
 3. After merge, GitHub Pages auto-deploys from `main`
 
 ### Commit message format
 
 ```
-sq-N: short imperative description
+ps-N: short imperative description
 
 - bullet detail if needed
 ```
 
-Example: `sq-4: add difficulty toggle persistence`
+Example: `ps-4: add difficulty toggle persistence`
 
 ### PR format
 
-- Title: `sq-N: short description` (feature/bugfix) or `chore: promote staging → main [sq-N, sq-M]`
+- Title: `ps-N: short description` (feature/bugfix) or `chore: promote staging → main [ps-N, ps-M]`
 - Body: what changed, how to test, story reference
 
 ### Work tracking (Beads)
 
 - All stories live in Beads
-- Story IDs are sequential and take the form `sq-1`, `sq-2`, `sq-3`, …
+- Story IDs are sequential and take the form `ps-1`, `ps-2`, `ps-3`, …
 - Open a story before starting work; close it when the PR merges to `staging`
 
 ### Versioning
