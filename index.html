@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="version-badge">v0.1.23</div>
+  <div id="version-badge">v0.1.25</div>
   <button id="home-btn" class="home-btn hidden">&#8962; Home</button>
 
   <!-- ===================== HOME SCREEN ===================== -->
@@ -26,11 +26,10 @@
         <span class="module-icon">ABC</span>
         <span class="module-name">Spelling</span>
       </button>
-      <div class="module-card module-card--disabled">
+      <button class="module-card" id="module-reading">
         <span class="module-icon">📖</span>
         <span class="module-name">Reading</span>
-        <span class="module-coming-soon">Coming Soon</span>
-      </div>
+      </button>
       <div class="module-card module-card--disabled">
         <span class="module-icon">123</span>
         <span class="module-name">Math</span>
@@ -98,6 +97,84 @@
     </div>
   </div>
 
+  <!-- ===================== READING SCREEN ===================== -->
+  <div id="reading-screen" class="screen hidden">
+    <div class="title-block">
+      <h1 class="game-title">Reading<br>Quest</h1>
+      <p class="game-subtitle">Minecraft Edition</p>
+    </div>
+
+    <div class="panel">
+      <label class="mc-label" for="reading-level-select">Grade Level</label>
+      <div class="mc-select-wrap">
+        <select id="reading-level-select" class="mc-select">
+          <option value="k">&#128218; Kindergarten</option>
+          <option value="grade1" selected>&#128218; Grade 1</option>
+          <option value="grade2">&#128218; Grade 2</option>
+          <option value="grade3">&#128218; Grade 3</option>
+          <option value="grade4">&#128218; Grade 4+</option>
+        </select>
+        <span class="mc-select-arrow">&#9660;</span>
+      </div>
+
+      <label class="mc-label">Choose a Passage</label>
+      <div id="reading-passage-list" class="reading-passage-list"></div>
+
+      <button id="reading-start-btn" class="mc-button mc-button--green" disabled>
+        &#9658; Start Reading!
+      </button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header" id="new-passage-toggle" onclick="readingGame.toggleNewPassage()">
+        <h2 class="panel-title">Add Custom Passage</h2>
+        <span id="new-passage-arrow" class="panel-arrow">&#9654;</span>
+      </div>
+      <div id="new-passage-body" class="hidden">
+        <label class="mc-label" for="passage-title-input">Passage Title</label>
+        <input id="passage-title-input" class="mc-input" type="text" maxlength="60" placeholder="The Creeper's Secret">
+
+        <label class="mc-label" for="passage-text-input">Passage Text</label>
+        <textarea id="passage-text-input" class="mc-textarea" rows="6" placeholder="Enter the reading passage here..."></textarea>
+
+        <div id="passage-questions-container"></div>
+
+        <button id="add-question-btn" class="mc-button mc-button--small">+ Add Question</button>
+        <button id="save-passage-btn" class="mc-button">&#128190; Save Passage</button>
+      </div>
+    </div>
+
+    <div class="panel" id="reading-history-panel">
+      <h2 class="panel-title">My Passages</h2>
+      <div id="reading-history-list"></div>
+    </div>
+  </div>
+
+  <!-- ================= READING GAME SCREEN ================== -->
+  <div id="reading-game-screen" class="screen hidden">
+    <canvas id="reading-mob-canvas"></canvas>
+    <div class="game-header">
+      <div class="progress-wrap">
+        <span class="progress-label">Questions:</span>
+        <div id="reading-progress-row" class="progress-row"></div>
+      </div>
+      <button id="reading-quit-btn" class="mc-button mc-button--small">&#10005; Quit</button>
+    </div>
+
+    <div id="reading-passage-area" class="reading-passage-area">
+      <p id="reading-passage-title" class="reading-passage-title"></p>
+      <div id="reading-word-tokens" class="reading-word-tokens"></div>
+      <button id="done-reading-btn" class="mc-button mc-button--green reading-done-btn">
+        &#10003; Done Reading!
+      </button>
+    </div>
+
+    <div id="reading-question-area" class="reading-question-area hidden">
+      <div id="reading-question-text" class="reading-question-text"></div>
+      <div id="reading-options" class="reading-options"></div>
+    </div>
+  </div>
+
   <!-- ===================== GAME SCREEN ===================== -->
   <div id="game-screen" class="screen hidden">
     <canvas id="mob-canvas"></canvas>
@@ -117,10 +194,6 @@
 
     <div id="game-area" class="game-area">
       <!-- Mechanic UI injected here by game.js -->
-    </div>
-
-    <div id="word-feedback" class="word-feedback hidden">
-      <!-- ✓ / ✗ feedback injected here -->
     </div>
 
   </div>
@@ -154,6 +227,8 @@
     <button id="bonus-home-btn" class="mc-button hidden">&#8592; Back to Home</button>
   </div>
 
+  <div id="word-feedback" class="word-feedback hidden"></div>
+
   <input id="kb-input" type="text"
     autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
     style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">
@@ -164,6 +239,8 @@
   <script src="rewards.js"></script>
   <script src="bonus.js"></script>
   <script src="mobs.js"></script>
+  <script src="reading-data.js"></script>
+  <script src="reading.js"></script>
   <script src="game.js"></script>
   <script>
     // Set today's date as the default label

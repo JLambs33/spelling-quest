@@ -54,6 +54,39 @@ function deleteWordList(id) {
   _saveLists(_loadLists().filter(l => l.id !== id));
 }
 
+// ── Reading module ────────────────────────────────────────────
+
+const DB_PASSAGES_KEY = 'pixelScholar_passages';
+
+function _loadPassages() {
+  try {
+    return JSON.parse(localStorage.getItem(DB_PASSAGES_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+// Save a custom passage. Returns the saved entry.
+function savePassageSet(passage) {
+  const passages = _loadPassages();
+  passages.unshift(passage);
+  localStorage.setItem(DB_PASSAGES_KEY, JSON.stringify(passages));
+  return passage;
+}
+
+// Returns all saved custom passages, newest first.
+function getAllPassageSets() {
+  return _loadPassages();
+}
+
+// Deletes a custom passage by id.
+function deletePassageSet(id) {
+  const remaining = _loadPassages().filter(p => p.id !== id);
+  localStorage.setItem(DB_PASSAGES_KEY, JSON.stringify(remaining));
+}
+
+// ── Mob cycling ───────────────────────────────────────────────
+
 // Returns the current mob index (0–5).
 function getMobIndex() {
   return parseInt(localStorage.getItem(DB_MOB_KEY) || '0', 10);

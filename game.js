@@ -21,13 +21,17 @@ function getWordsFromTextarea() {
 // ============================================================
 //  Screen navigation
 // ============================================================
-const SCREENS = ['home-screen', 'parent-screen', 'game-screen', 'champion-screen', 'bonus-screen'];
+const SCREENS = ['home-screen', 'parent-screen', 'reading-screen', 'game-screen', 'reading-game-screen', 'champion-screen', 'bonus-screen'];
+
+// Tracks which learning module is currently active; used for post-session navigation.
+var currentModule = 'spelling';
 
 function showScreen(id) {
   SCREENS.forEach(s =>
     document.getElementById(s).classList.toggle('hidden', s !== id)
   );
-  document.getElementById('home-btn').classList.toggle('hidden', id !== 'parent-screen');
+  const setupScreens = ['parent-screen', 'reading-screen'];
+  document.getElementById('home-btn').classList.toggle('hidden', !setupScreens.includes(id));
 }
 
 // ============================================================
@@ -160,6 +164,8 @@ function startQuest() {
   renderHistory();
   collapseNewList();
   gs = { words, wordIndex: 0, attempts: 0, correctCount: 0, wrongWords: [], results: [], currentWrongAttempts: [] };
+  currentModule = 'spelling';
+  document.getElementById('change-words-btn').innerHTML = '&#8592; Change Words';
   showScreen('game-screen');
   ambientMobs.start();
   updateProgress();
@@ -522,13 +528,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function onBonusHome() {
     bonusHomeBtn.classList.add('hidden');
     bonus.stopGame();
-    showScreen('parent-screen');
+    showScreen(currentModule === 'reading' ? 'reading-screen' : 'parent-screen');
   }
   bonusHomeBtn.addEventListener('click',    onBonusHome);
   bonusHomeBtn.addEventListener('touchend', (e) => { e.preventDefault(); onBonusHome(); });
 
   document.getElementById('module-spelling').addEventListener('click', () => {
     showScreen('parent-screen');
+  });
+
+  document.getElementById('module-reading').addEventListener('click', () => {
+    showScreen('reading-screen');
   });
 
   document.getElementById('home-btn').addEventListener('click', () => {
@@ -540,11 +550,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('play-again-btn').addEventListener('click', () => {
     awaitingInput = false;
-    showScreen('parent-screen');
+    showScreen(currentModule === 'reading' ? 'reading-screen' : 'parent-screen');
   });
 
   document.getElementById('change-words-btn').addEventListener('click', () => {
     awaitingInput = false;
-    showScreen('parent-screen');
+    showScreen(currentModule === 'reading' ? 'reading-screen' : 'parent-screen');
   });
 });

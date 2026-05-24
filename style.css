@@ -409,12 +409,14 @@ html, body {
 /* ============================================================
    Ambient mob canvas (game screen background)
    ============================================================ */
-#game-screen {
+#game-screen,
+#reading-game-screen {
   position: relative;
   isolation: isolate;
 }
 
-#mob-canvas {
+#mob-canvas,
+#reading-mob-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -961,7 +963,213 @@ html, body {
 ::-webkit-scrollbar-thumb:hover { background: var(--mc-stone-light); }
 
 /* ============================================================
-   Home button (fixed top-left, shown on parent screen only)
+   Reading module — setup screen (reading-screen)
+   ============================================================ */
+.reading-passage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.passage-list-item {
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 3px solid var(--mc-stone-dark);
+  cursor: pointer;
+  transition: filter 80ms;
+  user-select: none;
+}
+
+.passage-list-item:hover {
+  filter: brightness(1.2);
+}
+
+.passage-list-item--selected {
+  border-color: var(--mc-gold);
+  background: rgba(255, 170, 0, 0.12);
+}
+
+.passage-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.passage-list-title {
+  font-size: 11px;
+  color: var(--mc-text);
+  text-shadow: var(--shadow-text);
+}
+
+.passage-list-meta {
+  font-size: 9px;
+  color: var(--mc-stone-light);
+  text-shadow: var(--shadow-text);
+}
+
+.passage-type-badge {
+  color: var(--mc-xp);
+}
+
+/* ============================================================
+   Reading module — custom passage question blocks
+   ============================================================ */
+.passage-question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 2px solid var(--mc-stone-dark);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.passage-question-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   Reading module — game screen (reading-game-screen)
+   ============================================================ */
+.reading-passage-area {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.reading-passage-title {
+  font-size: 14px;
+  color: var(--mc-gold);
+  text-shadow: var(--shadow-text);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.reading-word-tokens {
+  width: 100%;
+  background: var(--mc-panel-bg);
+  border: 4px solid #000;
+  border-top-color:    var(--mc-stone-light);
+  border-left-color:   var(--mc-stone-light);
+  border-right-color:  var(--mc-stone-dark);
+  border-bottom-color: var(--mc-stone-dark);
+  padding: 18px 20px;
+  line-height: 2.6;
+  text-align: left;
+}
+
+.word-token {
+  font-family: var(--font-main);
+  font-size: clamp(13px, 2.5vw, 18px);
+  color: var(--mc-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  text-shadow: var(--shadow-text);
+  transition: color 80ms;
+  user-select: none;
+}
+
+.word-token:hover {
+  color: var(--mc-gold);
+}
+
+.word-token:active {
+  color: var(--mc-xp);
+}
+
+.reading-done-btn {
+  width: 100%;
+  max-width: 420px;
+  font-size: 14px;
+  padding: 16px;
+}
+
+.reading-question-area {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.reading-question-text {
+  width: 100%;
+  background: var(--mc-panel-bg);
+  border: 4px solid #000;
+  border-top-color:    var(--mc-stone-light);
+  border-left-color:   var(--mc-stone-light);
+  border-right-color:  var(--mc-stone-dark);
+  border-bottom-color: var(--mc-stone-dark);
+  padding: 18px 20px;
+  text-align: center;
+  line-height: 2.8;
+}
+
+.reading-question-text .word-token {
+  font-size: clamp(16px, 3.5vw, 22px);
+}
+
+.reading-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.reading-option {
+  font-family: var(--font-main);
+  font-size: clamp(13px, 2.5vw, 16px);
+  color: var(--mc-text);
+  background: var(--mc-stone);
+  border-top:    3px solid var(--mc-stone-light);
+  border-left:   3px solid var(--mc-stone-light);
+  border-right:  3px solid var(--mc-stone-dark);
+  border-bottom: 3px solid var(--mc-stone-dark);
+  padding: 14px 18px;
+  cursor: pointer;
+  text-shadow: var(--shadow-text);
+  text-align: left;
+  width: 100%;
+  transition: filter 80ms;
+  user-select: none;
+  letter-spacing: 1px;
+}
+
+.reading-option:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.reading-option:disabled {
+  cursor: not-allowed;
+}
+
+.reading-option--correct {
+  background: var(--mc-green);
+  border-top-color:    var(--mc-green-light);
+  border-left-color:   var(--mc-green-light);
+  border-right-color:  var(--mc-green-dark);
+  border-bottom-color: var(--mc-green-dark);
+}
+
+.reading-option--wrong {
+  background: #8B1A1A;
+  border-top-color:    #C43333;
+  border-left-color:   #C43333;
+  border-right-color:  #4A0D0D;
+  border-bottom-color: #4A0D0D;
+}
+
+/* ============================================================
+   Home button (fixed top-left, shown on setup screens)
    ============================================================ */
 .home-btn {
   position: fixed;
