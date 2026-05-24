@@ -10,7 +10,7 @@ const ambientMobs = (() => {
   const PAUSE_MIN       = 0.6;
   const PAUSE_MAX       = 2.2;
   const SPD_MIN         = 18;
-  const SPD_MAX         = 72;
+  const SPD_MAX         = 36;
   const VY_MAX          = 18;
   const BURN_DURATION   = 4.5;
   const TELEPORT_CHANCE = 0.45;
@@ -26,7 +26,7 @@ const ambientMobs = (() => {
     { kind: 'chicken',          w: 16, h: 18, weight: 3 },
     { kind: 'wolf',             w: 26, h: 20, weight: 2 },
     { kind: 'wandering_trader', w: 66, h: 38, weight: 1 },
-    { kind: 'enderman',         w: 12, h: 52, weight: 1 },
+    { kind: 'enderman',         w: 12, h: 52, weight: 0.4 },
   ];
 
   // Undead burn in daylight; day-only mobs leave when night falls
@@ -277,15 +277,15 @@ const ambientMobs = (() => {
     const legH  = h - headH - bodyH;
     const armW  = Math.round(w * 0.22);
     const bw    = w - armW * 2;
-    ctx.fillStyle = '#7AAD7A';
+    ctx.fillStyle = '#78B890';
     ctx.fillRect(x + armW, y, bw, headH);
-    ctx.fillStyle = '#1A3A1A';
+    ctx.fillStyle = '#0A2010';
     ctx.fillRect(x + armW + 3, y + 5, 3, 3);
     ctx.fillRect(x + armW + bw - 6, y + 5, 3, 3);
-    ctx.fillStyle = '#5A8A5A';
+    ctx.fillStyle = '#5898A0';
     ctx.fillRect(x, y + headH + 3, armW, Math.round(bodyH * 0.55));
     ctx.fillRect(x + w - armW, y + headH - 5, armW, Math.round(bodyH * 0.55));
-    ctx.fillStyle = '#557755';
+    ctx.fillStyle = '#2A5880';
     ctx.fillRect(x + armW, y + headH, bw, bodyH);
     const lw = Math.round(bw / 2) - 1;
     ctx.fillStyle = '#3A3A5A';
@@ -328,7 +328,7 @@ const ambientMobs = (() => {
     const headW = Math.round(w * 0.80);
     const hx    = x + Math.round((w - headW) / 2);
     // Head
-    ctx.fillStyle = '#1E7A1E';
+    ctx.fillStyle = '#32C832';
     ctx.fillRect(hx, y, headW, headH);
     // Eyes
     ctx.fillStyle = '#000';
@@ -349,14 +349,15 @@ const ambientMobs = (() => {
     // Body
     const bx = x + Math.round(w * 0.12);
     const bw = Math.round(w * 0.76);
-    ctx.fillStyle = '#1A6A1A';
+    ctx.fillStyle = '#28AA28';
     ctx.fillRect(bx, y + headH, bw, bodyH);
-    // Legs (two pairs)
-    ctx.fillStyle = '#166016';
-    const lw = Math.round(bw * 0.30);
-    const lg = Math.round(bw * 0.08);
-    ctx.fillRect(bx + lg,            y + headH + bodyH, lw, legH);
-    ctx.fillRect(bx + bw - lw - lg,  y + headH + bodyH, lw, legH);
+    // 4 legs with wide stance
+    ctx.fillStyle = '#229422';
+    const lw = Math.round(w * 0.20);
+    ctx.fillRect(x,                     y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + lw + 1,            y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + w - lw * 2 - 1,   y + headH + bodyH, lw, legH);
+    ctx.fillRect(x + w - lw,            y + headH + bodyH, lw, legH);
   }
 
   function drawSpider(x, y, w, h) {
