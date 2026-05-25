@@ -25,7 +25,7 @@ const ambientMobs = (() => {
     { kind: 'pig',              w: 24, h: 20, weight: 3 },
     { kind: 'chicken',          w: 16, h: 18, weight: 3 },
     { kind: 'wolf',             w: 26, h: 20, weight: 2 },
-    { kind: 'wandering_trader', w: 66, h: 38, weight: 1 },
+    { kind: 'wandering_trader', w: 66, h: 38, weight: 0.2 },
     { kind: 'enderman',         w: 12, h: 52, weight: 0.4 },
   ];
 
@@ -62,9 +62,11 @@ const ambientMobs = (() => {
 
   function spawnMob() {
     const day  = sceneBg.isDaytime();
+    const traderOnScreen = mobs.some(m => m.kind === 'wandering_trader');
     const pool = TYPES.filter(t =>
       !(day  && UNDEAD.has(t.kind)) &&
-      !(!day && DAY_ONLY.has(t.kind))
+      !(!day && DAY_ONLY.has(t.kind)) &&
+      !(t.kind === 'wandering_trader' && traderOnScreen)
     );
     const t        = pickTypeFrom(pool);
     const fromLeft = Math.random() < 0.5;
